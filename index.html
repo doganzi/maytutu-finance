@@ -341,17 +341,17 @@ input:focus, select:focus, textarea:focus {
    ⚠️ 사용자 권한 받은 후 ID 교체 필요
    ═══════════════════════════════════════════════ */
 const CONFIG = {
-  // OAuth Client ID — 스마트팩토리와 같은 클라이언트 사용 권장
-  // (anghodu.biz Workspace, 같은 OAuth로 두 앱 통합)
-  CLIENT_ID: '__REPLACE_WITH_OAUTH_CLIENT_ID__',
+  // OAuth Client ID — anghodu.biz Workspace 공유 (스마트팩토리와 동일 클라이언트)
+  // Cloud Console에서 redirect URI에 https://doganzi.github.io/maytutu-finance/ 추가 필요
+  CLIENT_ID: '905366454714-44kefd93vrs8eg1cgdeocuauo3fp9iou.apps.googleusercontent.com',
 
   // 권한 범위
   SCOPES: 'openid email profile https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive',
 
-  // Sheets / Drive ID (사용자 작업 후 등록)
-  SHEET_ID: '__REPLACE_WITH_SHEET_ID__',
-  DRIVE_FOLDER_ID: '__REPLACE_WITH_DRIVE_FOLDER_ID__',
-  PDF_FOLDER_ID: '__REPLACE_WITH_PDF_FOLDER_ID__',
+  // Sheets / Drive ID
+  SHEET_ID: '1oNaPr5UPG4GgRQE6pE47YDXHlxp4juVFsxMet3azG04',
+  DRIVE_FOLDER_ID: '10zvNMtkULd8EmUv-odRQCz4yLnDapJ2F',
+  PDF_FOLDER_ID: '1cmkosGyLAvYEoBoCX7btEX1v7jTWIehr',
 
   // 도메인 제한 (anghodu.biz 만 통과)
   ALLOWED_DOMAIN: 'anghodu.biz',
