@@ -1,0 +1,28 @@
+{
+  "name": "메이투투 Finance",
+  "short_name": "메이투투 Finance",
+  "description": "메이투투 사내 회계·세무·자금 통합 시스템",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#1565c0",
+  "lang": "ko",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%231565c0'/><text x='96' y='128' font-size='90' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>F</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%231565c0'/><text x='256' y='340' font-size='240' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>F</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

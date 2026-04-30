@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1565c0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="메이투투 Finance">
+<title>메이투투 Finance</title>
+<link rel="manifest" href="./manifest.json">
+
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS (스마트팩토리 차용 + 회계 색조)
+   ═══════════════════════════════════════════════ */
+:root {
+  --pri: #1565c0;          /* 메인 (회계: 파랑) */
+  --pri-d: #0d47a1;
+  --pri-l: #e3f2fd;
+  --acc: #f57c00;          /* 강조 (오렌지) */
+  --suc: #2e7d32;
+  --warn: #ed6c02;
+  --err: #c62828;
+  --info: #0288d1;
+  --bg: #f5f7fa;
+  --surf: #ffffff;
+  --txt: #1a1a1a;
+  --txt-l: #6b7280;
+  --txt-ll: #9ca3af;
+  --gray: #e5e7eb;
+  --gray-l: #f3f4f6;
+  --gray-d: #d1d5db;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Layout */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.header {
+  background: var(--surf);
+  border-bottom: 1px solid var(--gray);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky; top: 0; z-index: 50;
+}
+.header h1 { font-size: 16px; flex: 1; }
+.header .corp-toggle {
+  background: var(--gray-l);
+  border: 1px solid var(--gray);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.header .corp-toggle.active { background: var(--pri-l); color: var(--pri-d); border-color: var(--pri); }
+.header .user-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--txt-l);
+}
+.header .user-chip img { width: 24px; height: 24px; border-radius: 50%; }
+
+.main { flex: 1; padding: 16px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* Bottom nav (모바일) */
+.bottom-nav {
+  background: var(--surf);
+  border-top: 1px solid var(--gray);
+  display: flex; padding: 6px 0;
+  position: sticky; bottom: 0;
+}
+.bottom-nav .item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 6px 4px; cursor: pointer; font-size: 11px; color: var(--txt-l);
+}
+.bottom-nav .item.active { color: var(--pri); }
+.bottom-nav .item .icon { font-size: 20px; margin-bottom: 2px; }
+
+/* Cards */
+.card {
+  background: var(--surf);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.card.bl-pri { border-left: 4px solid var(--pri); }
+.card.bl-suc { border-left: 4px solid var(--suc); }
+.card.bl-warn { border-left: 4px solid var(--warn); }
+.card.bl-err { border-left: 4px solid var(--err); }
+.card.bl-info { border-left: 4px solid var(--info); }
+
+/* Buttons */
+.btn {
+  border: none; border-radius: 6px; padding: 10px 16px;
+  font-weight: 500; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.btn:active { transform: translateY(1px); }
+.btn-pri { background: var(--pri); color: white; }
+.btn-pri:hover { background: var(--pri-d); }
+.btn-acc { background: var(--acc); color: white; }
+.btn-suc { background: var(--suc); color: white; }
+.btn-err { background: var(--err); color: white; }
+.btn-outline { background: transparent; border: 1px solid var(--pri); color: var(--pri); }
+.btn-gray { background: var(--gray-l); color: var(--txt); border: 1px solid var(--gray); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-lg { padding: 14px 24px; font-size: 16px; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* Inputs */
+.input-group { margin-bottom: 12px; }
+.input-group label {
+  display: block; font-size: 12px; color: var(--txt-l); margin-bottom: 4px;
+}
+input[type=text], input[type=number], input[type=email], input[type=date], select, textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--gray-d);
+  border-radius: 6px; background: var(--surf); transition: border 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--pri); outline: none;
+}
+.input-suffix {
+  display: flex; align-items: center;
+  border: 1px solid var(--gray-d); border-radius: 6px; background: var(--surf);
+}
+.input-suffix input { border: none; flex: 1; }
+.input-suffix span {
+  padding: 0 12px; color: var(--txt-l); font-size: 12px;
+  border-left: 1px solid var(--gray);
+}
+
+/* Tables */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--gray); }
+.table th { background: var(--gray-l); font-weight: 600; font-size: 12px; color: var(--txt-l); }
+.table tbody tr:hover { background: var(--gray-l); cursor: pointer; }
+
+/* Status badges */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 12px;
+  font-size: 11px; font-weight: 500;
+}
+.badge-suc { background: #e8f5e9; color: var(--suc); }
+.badge-warn { background: #fff3e0; color: var(--warn); }
+.badge-err { background: #ffebee; color: var(--err); }
+.badge-info { background: #e1f5fe; color: var(--info); }
+.badge-gray { background: var(--gray-l); color: var(--txt-l); }
+
+/* Login screen */
+.login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--pri) 0%, var(--pri-d) 100%);
+  padding: 20px;
+}
+.login-card {
+  background: var(--surf); border-radius: 12px; padding: 32px 24px;
+  width: 100%; max-width: 400px; text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.login-card h1 { font-size: 24px; margin-bottom: 8px; color: var(--pri); }
+.login-card .subtitle { color: var(--txt-l); margin-bottom: 32px; }
+.login-card .google-btn {
+  width: 100%; padding: 14px;
+  background: white; color: #1f2937; border: 1px solid var(--gray-d);
+  border-radius: 8px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+}
+.login-card .google-btn:hover { background: var(--gray-l); }
+.login-card .domain-note {
+  margin-top: 16px; font-size: 12px; color: var(--txt-ll);
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--txt); color: white; padding: 12px 20px;
+  border-radius: 8px; font-size: 13px; max-width: 90%;
+  z-index: 100; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.toast.show { opacity: 1; }
+.toast.err { background: var(--err); }
+.toast.warn { background: var(--warn); }
+.toast.suc { background: var(--suc); }
+
+/* Loading */
+.loading {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.loading .spinner {
+  width: 40px; height: 40px; border: 3px solid var(--gray);
+  border-top-color: var(--pri); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Dialog */
+.dialog-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 150; padding: 20px;
+}
+.dialog {
+  background: var(--surf); border-radius: 8px; padding: 20px;
+  width: 100%; max-width: 420px;
+}
+.dialog h3 { margin-bottom: 12px; }
+.dialog p { color: var(--txt-l); margin-bottom: 20px; }
+.dialog .actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Utility */
+.hidden { display: none !important; }
+.fs-10 { font-size: 10px; }
+.fs-11 { font-size: 11px; }
+.fs-12 { font-size: 12px; }
+.fs-13 { font-size: 13px; }
+.c-txt-l { color: var(--txt-l); }
+.c-txt-ll { color: var(--txt-ll); }
+.c-pri { color: var(--pri); }
+.c-suc { color: var(--suc); }
+.c-err { color: var(--err); }
+.mt-4 { margin-top: 4px; } .mt-8 { margin-top: 8px; } .mt-12 { margin-top: 12px; } .mt-16 { margin-top: 16px; }
+.mb-4 { margin-bottom: 4px; } .mb-8 { margin-bottom: 8px; } .mb-12 { margin-bottom: 12px; } .mb-16 { margin-bottom: 16px; }
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.gap-4 { gap: 4px; } .gap-8 { gap: 8px; } .gap-12 { gap: 12px; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 600; }
+.font-mono { font-family: ui-monospace, SFMono-Regular, monospace; }
+
+/* Grid */
+.grid { display: grid; gap: 12px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 640px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* KPI cards */
+.kpi-card { background: var(--surf); padding: 16px; border-radius: 8px; box-shadow: var(--shadow-sm); }
+.kpi-card .label { font-size: 11px; color: var(--txt-l); margin-bottom: 4px; }
+.kpi-card .value { font-size: 24px; font-weight: 700; color: var(--pri); }
+.kpi-card .delta { font-size: 11px; margin-top: 4px; }
+.kpi-card .delta.up { color: var(--suc); }
+.kpi-card .delta.down { color: var(--err); }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen" class="login-screen hidden">
+  <div class="login-card">
+    <h1>메이투투 Finance</h1>
+    <div class="subtitle">사내 회계·세무·자금 통합 시스템</div>
+    <button class="google-btn" onclick="Auth.login()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Google로 로그인 (anghodu.biz)
+    </button>
+    <div class="domain-note">
+      anghodu.biz 도메인 계정만 사용 가능합니다.<br>
+      문의: 사내 관리자
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" class="app hidden">
+  <header class="header">
+    <h1 id="screen-title">메이투투 Finance</h1>
+    <div class="flex gap-4">
+      <button class="corp-toggle" id="corp-toggle-maytutu" onclick="setCorpView('MAYTUTU')">메이투투</button>
+      <button class="corp-toggle" id="corp-toggle-anghodu" onclick="setCorpView('ANGHODU')">앙호두</button>
+      <button class="corp-toggle active" id="corp-toggle-all" onclick="setCorpView('ALL')">합산</button>
+    </div>
+    <div class="user-chip" id="user-chip"></div>
+    <button class="btn btn-sm btn-outline" onclick="Auth.logout()">로그아웃</button>
+  </header>
+
+  <main class="main" id="main-content">
+    <!-- Screens render here -->
+  </main>
+
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="item active" data-screen="home"><div class="icon">🏠</div>홈</div>
+    <div class="item" data-screen="ledger"><div class="icon">📒</div>거래</div>
+    <div class="item" data-screen="invoice"><div class="icon">🧾</div>인보이스</div>
+    <div class="item" data-screen="master"><div class="icon">📋</div>마스터</div>
+    <div class="item" data-screen="more"><div class="icon">⋯</div>더보기</div>
+  </nav>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Loading -->
+<div id="loading" class="loading hidden"><div class="spinner"></div></div>
+
+<!-- Dialog -->
+<div id="dialog-overlay" class="dialog-overlay hidden">
+  <div class="dialog">
+    <h3 id="dialog-title"></h3>
+    <p id="dialog-msg"></p>
+    <div class="actions" id="dialog-actions"></div>
+  </div>
+</div>
+
+<!-- Print Area (PDF용) -->
+<div id="print-area" style="display:none"></div>
+
+<!-- External Libraries (인보이스 PDF용 — V1 단계에서 사용) -->
+<script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIG
+   ⚠️ 사용자 권한 받은 후 ID 교체 필요
+   ═══════════════════════════════════════════════ */
+const CONFIG = {
+  // OAuth Client ID — 스마트팩토리와 같은 클라이언트 사용 권장
+  // (anghodu.biz Workspace, 같은 OAuth로 두 앱 통합)
+  CLIENT_ID: '__REPLACE_WITH_OAUTH_CLIENT_ID__',
+
+  // 권한 범위
+  SCOPES: 'openid email profile https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive',
+
+  // Sheets / Drive ID (사용자 작업 후 등록)
+  SHEET_ID: '__REPLACE_WITH_SHEET_ID__',
+  DRIVE_FOLDER_ID: '__REPLACE_WITH_DRIVE_FOLDER_ID__',
+  PDF_FOLDER_ID: '__REPLACE_WITH_PDF_FOLDER_ID__',
+
+  // 도메인 제한 (anghodu.biz 만 통과)
+  ALLOWED_DOMAIN: 'anghodu.biz',
+
+  // 시스템 메타
+  APP_NAME: '메이투투 Finance',
+  APP_VERSION: '0.1.0-MVP-A',
+  STORAGE_PREFIX: 'mf_', // localStorage prefix
+};
+
+/* ═══════════════════════════════════════════════
+   STATE MANAGEMENT (회계 도메인 캐시)
+   ═══════════════════════════════════════════════ */
+const State = {
+  user: null,            // { email, name, role, picture }
+  token: null,
+  currentScreen: 'login',
+  prevScreen: null,
+  activeTab: 'home',
+  corpView: 'ALL',       // 'MAYTUTU' / 'ANGHODU' / 'ALL'
+  _lastParams: {},
+
+  // ─ 회계 도메인 캐시 (시트 22개, Step 0에서 v2로 확정 예정) ─
+  legalEntities: [],     // 법인
+  partners: [],          // 거래처
+  stores: [],            // 점포
+  franchiseContracts: [],// 가맹점계약
+  accounts: [],          // 계정과목
+  bus: [],               // BU채널
+  skus: [],              // 상품SKU
+  boms: [],              // BoM (선택)
+  taxRates: [],          // 세율
+  fxRates: [],           // 환율
+  costMaster: [],        // 원가마스터
+  supplyPriceMaster: [], // 공급가마스터
+  salePricePolicy: [],   // 판매가정책
+  ledger: [],            // 거래원장
+  journals: [],          // 분개
+  taxInvoicesOut: [],    // 세금계산서_매출
+  taxInvoicesIn: [],     // 세금계산서_매입
+  invoices: [],          // 인보이스
+  receivables: [],       // 채권aging
+  vatWorkbook: [],       // 부가세워크북
+  auditLog: [],          // 감사로그
+  users: [],             // 사용자
+
+  // 입력 중 상태 (Atomic Claim 등)
+  invoiceExec: { invoiceId: null, items: [] },
+  journalExec: { entries: [] },
+  vatExec: { quarter: null, draft: null },
+};
+
+/* ═══════════════════════════════════════════════
+   UTILITY (스마트팩토리 차용)
+   ═══════════════════════════════════════════════ */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+const $id = (id) => document.getElementById(id);
+
+// ── 중복 제출 방지 (스마트팩토리 동일) ──
+const _actionLocks = {};
+const _lockTimers = {};
+const LOCK_TIMEOUT_MS = 30000;
+function acquireLock(name) {
+  if (_actionLocks[name]) { toast('처리 중입니다. 잠시만 기다려주세요.', 'warn'); return false; }
+  _actionLocks[name] = true;
+  clearTimeout(_lockTimers[name]);
+  _lockTimers[name] = setTimeout(() => {
+    if (_actionLocks[name]) {
+      console.warn(`[Lock] ${name} 자동 해제 (${LOCK_TIMEOUT_MS/1000}초 타임아웃)`);
+      _actionLocks[name] = false;
+    }
+  }, LOCK_TIMEOUT_MS);
+  return true;
+}
+function releaseLock(name) { _actionLocks[name] = false; clearTimeout(_lockTimers[name]); }
+
+function showLoading() { $id('loading').classList.remove('hidden'); }
+function hideLoading() { $id('loading').classList.add('hidden'); }
+
+function toast(msg, type = 'info', duration = 2500) {
+  const el = $id('toast');
+  el.style.whiteSpace = 'pre-line';
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function confirmDialog(title, msg, onOk, onCancel) {
+  $id('dialog-title').textContent = title;
+  $id('dialog-msg').textContent = msg;
+  $id('dialog-actions').innerHTML = `
+    <button class="btn btn-sm btn-outline btn-gray" id="dialog-cancel">취소</button>
+    <button class="btn btn-sm btn-pri" id="dialog-ok">확인</button>
+  `;
+  $id('dialog-overlay').classList.remove('hidden');
+  $id('dialog-ok').onclick = () => { $id('dialog-overlay').classList.add('hidden'); onOk && onOk(); };
+  $id('dialog-cancel').onclick = () => { $id('dialog-overlay').classList.add('hidden'); onCancel && onCancel(); };
+}
+
+function formatDate(d) {
+  if (!d) d = new Date();
+  if (typeof d === 'string') d = new Date(d);
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function formatDateTime(d) {
+  if (!d) d = new Date();
+  if (typeof d === 'string') d = new Date(d);
+  const date = formatDate(d);
+  const h = String(d.getHours()).padStart(2, '0'), mi = String(d.getMinutes()).padStart(2, '0'), s = String(d.getSeconds()).padStart(2, '0');
+  return `${date} ${h}:${mi}:${s}`;
+}
+function toYYMMDD(dateStr) {
+  const d = typeof dateStr === 'string' ? new Date(dateStr) : dateStr || new Date();
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yy}${mm}${dd}`;
+}
+function formatMoney(n, currency = 'KRW') {
+  if (n == null || isNaN(n)) return '-';
+  const num = Number(n);
+  if (currency === 'KRW') return `₩${num.toLocaleString('ko-KR')}`;
+  if (currency === 'USD') return `$${num.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+  if (currency === 'JPY') return `¥${num.toLocaleString('ja-JP')}`;
+  return `${num.toLocaleString()} ${currency}`;
+}
+
+// 사업자등록번호 검증 (한국)
+function validateBizNo(bizNo) {
+  if (!bizNo) return false;
+  const cleaned = String(bizNo).replace(/-/g, '');
+  if (!/^\d{10}$/.test(cleaned)) return false;
+  const weights = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(cleaned[i]) * weights[i];
+  sum += Math.floor(parseInt(cleaned[8]) * 5 / 10);
+  const check = (10 - (sum % 10)) % 10;
+  return check === parseInt(cleaned[9]);
+}
+
+/* ═══════════════════════════════════════════════
+   GOOGLE OAUTH 2.0 (스마트팩토리 차용)
+   ═══════════════════════════════════════════════ */
+const Auth = {
+  _tokenExpiry: 0,
+  _refreshTimer: null,
+
+  init() {
+    // URL hash에서 토큰 (OAuth redirect)
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.substring(1));
+      State.token = params.get('access_token');
+      const expiresIn = parseInt(params.get('expires_in')) || 3600;
+      this._tokenExpiry = Date.now() + expiresIn * 1000;
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'token', State.token);
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'token_expiry', String(this._tokenExpiry));
+      window.location.hash = '';
+      this._scheduleRefresh(expiresIn);
+      this.loadUserInfo();
+      return true;
+    }
+    // localStorage
+    const saved = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token');
+    if (saved) {
+      State.token = saved;
+      this._tokenExpiry = parseInt(localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token_expiry')) || 0;
+      const remaining = Math.max(0, Math.floor((this._tokenExpiry - Date.now()) / 1000));
+      if (remaining > 60) this._scheduleRefresh(remaining);
+      const savedUser = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'user');
+      if (savedUser) State.user = JSON.parse(savedUser);
+      return true;
+    }
+    return false;
+  },
+
+  _scheduleRefresh(expiresInSec) {
+    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    const refreshIn = Math.max(30, expiresInSec - 300) * 1000;
+    this._refreshTimer = setTimeout(() => this._silentRefresh(), refreshIn);
+    console.log(`[Auth] Token refresh scheduled in ${Math.round(refreshIn/1000)}s`);
+  },
+
+  _silentRefresh() {
+    let redirect = window.location.origin + window.location.pathname;
+    redirect = redirect.replace(/\/index\.html.*$/, '/').replace(/\?.*$/, '');
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CONFIG.CLIENT_ID}&redirect_uri=${encodeURIComponent(redirect)}&response_type=token&scope=${encodeURIComponent(CONFIG.SCOPES)}&prompt=none&hd=${CONFIG.ALLOWED_DOMAIN}`;
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    let handled = false;
+    const cleanup = () => { if (handled) return; handled = true; try { document.body.removeChild(iframe); } catch(e) {} };
+    iframe.onload = () => {
+      try {
+        const iframeHash = iframe.contentWindow.location.hash;
+        if (iframeHash && iframeHash.includes('access_token')) {
+          const params = new URLSearchParams(iframeHash.substring(1));
+          State.token = params.get('access_token');
+          const expiresIn = parseInt(params.get('expires_in')) || 3600;
+          this._tokenExpiry = Date.now() + expiresIn * 1000;
+          localStorage.setItem(CONFIG.STORAGE_PREFIX + 'token', State.token);
+          localStorage.setItem(CONFIG.STORAGE_PREFIX + 'token_expiry', String(this._tokenExpiry));
+          this._scheduleRefresh(expiresIn);
+          console.log('[Auth] Token silently refreshed');
+        }
+      } catch (e) {
+        console.warn('[Auth] Silent refresh blocked, will prompt on next 401');
+      }
+      cleanup();
+    };
+    setTimeout(cleanup, 10000);
+    document.body.appendChild(iframe);
+  },
+
+  isTokenFresh() { return this._tokenExpiry > Date.now() + 60000; },
+
+  login() {
+    let redirect = window.location.origin + window.location.pathname;
+    redirect = redirect.replace(/\/index\.html.*$/, '/').replace(/\?.*$/, '');
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CONFIG.CLIENT_ID}&redirect_uri=${encodeURIComponent(redirect)}&response_type=token&scope=${encodeURIComponent(CONFIG.SCOPES)}&prompt=select_account&hd=${CONFIG.ALLOWED_DOMAIN}`;
+    window.location.href = url;
+  },
+
+  logout() {
+    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    State.token = null;
+    State.user = null;
+    this._tokenExpiry = 0;
+    localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'token');
+    localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'token_expiry');
+    localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'user');
+    SheetsAPI.invalidateAllCache();
+    Router.go('login');
+  },
+
+  async loadUserInfo() {
+    try {
+      const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${State.token}` }
+      });
+      if (!res.ok) { this.logout(); return; }
+      const data = await res.json();
+
+      // anghodu.biz 도메인 제한
+      if (!data.email.endsWith('@' + CONFIG.ALLOWED_DOMAIN)) {
+        toast(`${CONFIG.ALLOWED_DOMAIN} 계정만 사용 가능합니다.`, 'err', 4000);
+        this.logout();
+        return;
+      }
+
+      State.user = {
+        email: data.email,
+        name: data.name,
+        picture: data.picture,
+        role: 'viewer', // 기본값. checkRole로 정정
+      };
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'user', JSON.stringify(State.user));
+      await this.checkRole();
+    } catch (e) {
+      console.error('[Auth] error:', e);
+      this.logout();
+    }
+  },
+
+  async checkRole() {
+    try {
+      const users = await SheetsAPI.getAll('사용자');
+      const u = users.find(r => r[0] === State.user.email);
+      if (u) {
+        State.user.role = u[2] || 'viewer';
+        State.user.name = u[1] || State.user.name;
+      } else {
+        toast('등록되지 않은 계정입니다. 관리자에게 문의하세요.', 'err', 4000);
+        this.logout();
+        return;
+      }
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'user', JSON.stringify(State.user));
+    } catch (e) {
+      console.warn('[Auth] checkRole failed (시트 없음 가능 - MVP-A 초기):', e);
+      // MVP-A 초기에는 사용자 시트가 없을 수 있음. admin으로 진행 (관리자 첫 입력용)
+      State.user.role = 'admin';
+    }
+  },
+
+  async validateToken() {
+    if (!State.token) return false;
+    if (this.isTokenFresh()) return true;
+    try {
+      const res = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${State.token}`);
+      if (res.ok) {
+        const data = await res.json();
+        const expiresIn = parseInt(data.expires_in) || 0;
+        this._tokenExpiry = Date.now() + expiresIn * 1000;
+        localStorage.setItem(CONFIG.STORAGE_PREFIX + 'token_expiry', String(this._tokenExpiry));
+        if (expiresIn > 60) this._scheduleRefresh(expiresIn);
+        return true;
+      }
+      return false;
+    } catch { return false; }
+  },
+
+  // 권한 체크 helper
+  isAdmin() { return State.user?.role === 'admin'; },
+  isAccountant() { return ['admin', 'accountant'].includes(State.user?.role); },
+  isOperator() { return ['admin', 'accountant', 'operator'].includes(State.user?.role); },
+  canEdit() { return this.isAccountant(); },
+};
+
+/* ═══════════════════════════════════════════════
+   GOOGLE SHEETS API (스마트팩토리 차용)
+   ═══════════════════════════════════════════════ */
+const SheetsAPI = {
+  baseUrl() { return `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}`; },
+  headers() { return { Authorization: `Bearer ${State.token}`, 'Content-Type': 'application/json' }; },
+
+  // ── TTL 캐시 ──
+  _cache: {},
+  _cacheTTL: 30000,
+  _getCached(key) {
+    const entry = this._cache[key];
+    if (entry && Date.now() - entry.ts < this._cacheTTL) return entry.data;
+    return null;
+  },
+  _setCache(key, data) { this._cache[key] = { data, ts: Date.now() }; },
+  invalidateCache(tab) { Object.keys(this._cache).forEach(k => { if (k.includes(tab)) delete this._cache[k]; }); },
+  invalidateAllCache() { this._cache = {}; },
+
+  // ── Retry + 401/429 처리 ──
+  async _fetch(url, opts = {}, retries = 3) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const res = await fetch(url, { ...opts, headers: { ...this.headers(), ...(opts.headers || {}) } });
+        if (res.status === 401) {
+          toast('인증이 만료되었습니다. 다시 로그인합니다…', 'warn', 3000);
+          localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'token');
+          setTimeout(() => Auth.login(), 1500);
+          throw new Error('토큰 만료');
+        }
+        if (res.status === 429 && attempt < retries) {
+          const wait = Math.min(1000 * Math.pow(2, attempt) + Math.random() * 500, 10000);
+          console.warn(`[SheetsAPI] 429, retry ${attempt+1}/${retries} in ${Math.round(wait)}ms`);
+          await new Promise(r => setTimeout(r, wait));
+          continue;
+        }
+        if (res.status >= 500 && attempt < retries) {
+          const wait = 1000 * Math.pow(2, attempt);
+          console.warn(`[SheetsAPI] ${res.status}, retry ${attempt+1}/${retries} in ${wait}ms`);
+          await new Promise(r => setTimeout(r, wait));
+          continue;
+        }
+        return res;
+      } catch (e) {
+        if (e.message === '토큰 만료') throw e;
+        if (attempt < retries) {
+          const wait = 1000 * Math.pow(2, attempt);
+          console.warn(`[SheetsAPI] Network error, retry ${attempt+1}/${retries} in ${wait}ms:`, e.message);
+          await new Promise(r => setTimeout(r, wait));
+          continue;
+        }
+        throw new Error(`네트워크 오류: ${e.message}`);
+      }
+    }
+  },
+
+  async getAll(tab, useCache = true) {
+    if (useCache) {
+      const cached = this._getCached(`getAll:${tab}`);
+      if (cached) return JSON.parse(JSON.stringify(cached));
+    }
+    const res = await this._fetch(`${this.baseUrl()}/values/${encodeURIComponent(tab)}`);
+    if (!res.ok) throw new Error(`Sheets GET ${tab}: ${res.status}`);
+    const data = await res.json();
+    const rows = data.values ? data.values.slice(1) : [];
+    this._setCache(`getAll:${tab}`, rows);
+    return rows;
+  },
+
+  async getRange(range, useCache = true) {
+    if (useCache) {
+      const cached = this._getCached(`getRange:${range}`);
+      if (cached) return JSON.parse(JSON.stringify(cached));
+    }
+    const res = await this._fetch(`${this.baseUrl()}/values/${encodeURIComponent(range)}`);
+    if (!res.ok) throw new Error(`Sheets GET ${range}: ${res.status}`);
+    const data = await res.json();
+    const rows = data.values || [];
+    this._setCache(`getRange:${range}`, rows);
+    return rows;
+  },
+
+  async append(tab, rows) {
+    const body = { values: Array.isArray(rows[0]) ? rows : [rows] };
+    const colCount = Array.isArray(rows[0]) ? rows[0].length : rows.length;
+    const endCol = String.fromCharCode(64 + Math.min(colCount, 26));
+    const range = `${tab}!A:${endCol}`;
+    const res = await this._fetch(
+      `${this.baseUrl()}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+      { method: 'POST', body: JSON.stringify(body) }
+    );
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[SheetsAPI] APPEND 실패: ${tab}`, errText);
+      throw new Error(`Sheets APPEND ${tab}: ${res.status}`);
+    }
+    this.invalidateCache(tab);
+    return res.json();
+  },
+
+  async update(range, values) {
+    const body = { values: Array.isArray(values[0]) ? values : [values] };
+    const res = await this._fetch(
+      `${this.baseUrl()}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+      { method: 'PUT', body: JSON.stringify(body) }
+    );
+    if (!res.ok) throw new Error(`Sheets UPDATE ${range}: ${res.status}`);
+    const tab = range.split('!')[0];
+    this.invalidateCache(tab);
+    return res.json();
+  },
+
+  async batchUpdate(data) {
+    if (data.length === 0) return;
+    const CHUNK = 50;
+    for (let i = 0; i < data.length; i += CHUNK) {
+      const chunk = data.slice(i, i + CHUNK);
+      const body = { valueInputOption: 'USER_ENTERED', data: chunk };
+      const res = await this._fetch(`${this.baseUrl()}/values:batchUpdate`, { method: 'POST', body: JSON.stringify(body) });
+      if (!res.ok) throw new Error(`Sheets BATCHUPDATE: ${res.status}`);
+    }
+    const tabs = [...new Set(data.map(d => d.range.split('!')[0]))];
+    tabs.forEach(t => this.invalidateCache(t));
+  },
+
+  async batchGet(ranges) {
+    const params = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
+    const res = await this._fetch(`${this.baseUrl()}/values:batchGet?${params}`);
+    if (!res.ok) throw new Error(`Sheets BATCHGET: ${res.status}`);
+    const data = await res.json();
+    return data.valueRanges || [];
+  },
+
+  // Row 검색 후 update (id 기반)
+  async updateRow(tab, idCol, id, fieldsObj) {
+    const rows = await this.getAll(tab, false);
+    const idx = rows.findIndex(r => r[idCol] === id);
+    if (idx < 0) throw new Error(`Row not found: ${tab} ${id}`);
+    const rowNum = idx + 2; // header 1행 + 0-based
+    const updates = [];
+    for (const [col, val] of Object.entries(fieldsObj)) {
+      const colLetter = String.fromCharCode(65 + parseInt(col));
+      updates.push({ range: `${tab}!${colLetter}${rowNum}`, values: [[val]] });
+    }
+    await this.batchUpdate(updates);
+  },
+};
+
+/* ═══════════════════════════════════════════════
+   ATOMIC CLAIM 채번 함수 (스마트팩토리 generateLotId 패턴)
+   회계 도메인용 7개 채번 함수
+   ═══════════════════════════════════════════════ */
+async function _generateNumber(prefix, parts, tab, idCol = 0, padding = 3) {
+  const searchPrefix = `${prefix}-${parts.join('-')}-`;
+  const computeMaxSeq = (rows) => {
+    let max = 0;
+    rows.forEach(r => {
+      if (r[idCol] && r[idCol].startsWith(searchPrefix)) {
+        const arr = r[idCol].split('-');
+        const seq = parseInt(arr[arr.length - 1]) || 0;
+        if (seq > max) max = seq;
+      }
+    });
+    return max;
+  };
+  try {
+    SheetsAPI.invalidateCache(tab);
+    const rows1 = await SheetsAPI.getAll(tab, false);
+    let max = computeMaxSeq(rows1);
+    let id = `${searchPrefix}${String(max + 1).padStart(padding, '0')}`;
+
+    // 200~500ms 무작위 지연 (race 완화)
+    await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+    SheetsAPI.invalidateCache(tab);
+    const rows2 = await SheetsAPI.getAll(tab, false);
+    const max2 = computeMaxSeq(rows2);
+    if (max2 > max) {
+      id = `${searchPrefix}${String(max2 + 1).padStart(padding, '0')}`;
+      console.warn(`[채번] race 감지 → ${id}`);
+    }
+    return id;
+  } catch (e) {
+    const id = `${searchPrefix}${'0'.repeat(padding - 1)}1`;
+    console.warn(`[채번] fallback: ${id}`, e.message);
+    return id;
+  }
+}
+
+async function generateTxnId(corp = 'MAYTUTU') {
+  return _generateNumber('TXN', [corp, toYYMMDD(new Date())], '거래원장', 0, 5);
+}
+async function generateJournalId(corp = 'MAYTUTU') {
+  return _generateNumber('JNL', [corp, toYYMMDD(new Date())], '분개', 0, 4);
+}
+async function generateTaxInvoiceOutNo(corp = 'MAYTUTU') {
+  return _generateNumber('TIO', [corp, toYYMMDD(new Date())], '세금계산서_매출', 0, 3);
+}
+async function generateTaxInvoiceInId(corp = 'MAYTUTU') {
+  return _generateNumber('TII', [corp, toYYMMDD(new Date())], '세금계산서_매입', 0, 3);
+}
+async function generateInvoiceNo(type = 'KR', corp = 'MAYTUTU', country = 'KR') {
+  const prefix = type === '영문_외화' ? `INV-${corp}-${country}` : type === '가맹점정산서' ? 'STL' : 'INV';
+  return _generateNumber(prefix, [toYYMMDD(new Date())], '인보이스', 0, 3);
+}
+async function generateSettlementNo(storeCode, period = null) {
+  return _generateNumber('STL', [storeCode, toYYMMDD(period || new Date())], '인보이스', 0, 3);
+}
+async function generateAgingId() {
+  return _generateNumber('AG', [toYYMMDD(new Date())], '채권aging', 0, 5);
+}
+
+/* ═══════════════════════════════════════════════
+   감사 로그 helper (스마트팩토리 패턴)
+   ═══════════════════════════════════════════════ */
+async function appendAuditLog(action, sheet, targetId, beforeObj, afterObj, reason = '') {
+  const logId = await _generateNumber('LOG', [toYYMMDD(new Date())], '감사로그', 0, 5).catch(() => `LOG-${Date.now()}`);
+  const row = [
+    logId,
+    formatDateTime(new Date()),
+    State.user?.email || 'system',
+    action,
+    sheet,
+    targetId || '',
+    beforeObj ? JSON.stringify(beforeObj) : '',
+    afterObj ? JSON.stringify(afterObj) : '',
+    reason,
+    '', // ip (선택)
+    navigator.userAgent.substring(0, 100),
+  ];
+  try {
+    await SheetsAPI.append('감사로그', row);
+  } catch (e) {
+    console.warn('[감사로그] 기록 실패:', e.message);
+  }
+}
+
+// 시트별 audit_note 컬럼에 누적 (스마트팩토리 패턴)
+function makeAuditNote(action, reason) {
+  return `[${action}] ${reason || ''} | ${State.user?.email || ''} | ${formatDateTime()}`;
+}
+function appendToAuditNote(existing, action, reason) {
+  const newNote = makeAuditNote(action, reason);
+  return existing ? `${existing} | ${newNote}` : newNote;
+}
+
+/* ═══════════════════════════════════════════════
+   ROUTER
+   ═══════════════════════════════════════════════ */
+const Router = {
+  go(screen, params = {}) {
+    State.prevScreen = State.currentScreen;
+    State.currentScreen = screen;
+    State._lastParams = params;
+    this._render(screen, params);
+  },
+  back() {
+    if (State.prevScreen) this.go(State.prevScreen);
+  },
+  async _render(screen, params) {
+    if (screen === 'login') {
+      $id('login-screen').classList.remove('hidden');
+      $id('app').classList.add('hidden');
+      return;
+    }
+    $id('login-screen').classList.add('hidden');
+    $id('app').classList.remove('hidden');
+
+    // 사용자 정보 표시
+    if (State.user) {
+      $id('user-chip').innerHTML = `
+        ${State.user.picture ? `<img src="${State.user.picture}" alt="">` : ''}
+        <span>${State.user.name || State.user.email} (${State.user.role})</span>
+      `;
+    }
+
+    // bottom-nav active 상태
+    $$('#bottom-nav .item').forEach(el => {
+      el.classList.toggle('active', el.dataset.screen === screen);
+    });
+
+    if (Screens[screen]) {
+      try {
+        showLoading();
+        await Screens[screen](params);
+      } catch (e) {
+        console.error(`[Router] ${screen} 렌더 오류:`, e);
+        toast(`화면 로드 실패: ${e.message}`, 'err', 4000);
+        $id('main-content').innerHTML = `
+          <div class="card bl-err">
+            <h3 class="c-err">화면 로드 실패</h3>
+            <p class="c-txt-l mt-8">${e.message}</p>
+            <button class="btn btn-sm btn-outline mt-12" onclick="Router.go('home')">홈으로</button>
+          </div>`;
+      } finally {
+        hideLoading();
+      }
+    } else {
+      $id('main-content').innerHTML = `
+        <div class="card">
+          <h3>${screen}</h3>
+          <p class="c-txt-l mt-8">이 화면은 아직 준비 중입니다 (MVP 단계).</p>
+          <button class="btn btn-sm btn-outline mt-12" onclick="Router.go('home')">홈으로</button>
+        </div>`;
+    }
+  },
+};
+
+/* ═══════════════════════════════════════════════
+   SCREENS (화면 모음)
+   ═══════════════════════════════════════════════ */
+const Screens = {};
+
+// 헤더 헬퍼
+function renderHeader(title) {
+  $id('screen-title').textContent = title;
+}
+
+// 법인 토글
+function setCorpView(corp) {
+  State.corpView = corp;
+  ['maytutu', 'anghodu', 'all'].forEach(c => {
+    const el = $id(`corp-toggle-${c}`);
+    if (el) el.classList.toggle('active', c === corp.toLowerCase() || (corp === 'ALL' && c === 'all'));
+  });
+  // 현재 화면 다시 렌더
+  Router._render(State.currentScreen, State._lastParams);
+}
+
+/* ─── HOME (대시보드) ─── */
+Screens['home'] = async (params) => {
+  renderHeader('홈');
+  const isAdmin = Auth.isAdmin();
+  const setupCheck = await checkSetupStatus();
+
+  let setupBanner = '';
+  if (!setupCheck.allReady) {
+    setupBanner = `
+      <div class="card bl-warn">
+        <h3 class="c-txt">⚙️ 초기 셋업 진행 중</h3>
+        <p class="fs-13 c-txt-l mt-8">아직 모든 셋업이 완료되지 않았습니다:</p>
+        <ul class="fs-13 mt-8" style="padding-left:20px">
+          ${setupCheck.checks.map(c =>
+            `<li class="${c.ok ? 'c-suc' : 'c-warn'}">${c.ok ? '✓' : '○'} ${c.label}</li>`
+          ).join('')}
+        </ul>
+        <p class="fs-12 c-txt-ll mt-12">
+          상세: <code>docs/ENV_SETUP.md</code> 참조. ID 받으면 <code>index.html</code>의 <code>CONFIG</code> 객체에 등록.
+        </p>
+      </div>`;
+  }
+
+  $id('main-content').innerHTML = `
+    ${setupBanner}
+
+    <div class="grid grid-3 mb-12">
+      <div class="kpi-card">
+        <div class="label">법인</div>
+        <div class="value">${State.legalEntities.length || '-'}</div>
+        <div class="delta c-txt-l">메이투투·앙호두</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">거래처</div>
+        <div class="value">${State.partners.length || '-'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">점포</div>
+        <div class="value">${State.stores.length || '-'}</div>
+      </div>
+    </div>
+
+    <div class="card bl-pri">
+      <h3>안녕하세요, ${State.user?.name || '사용자'}님</h3>
+      <p class="c-txt-l mt-8">권한: <span class="badge badge-info">${State.user?.role}</span></p>
+      <p class="c-txt-l mt-4">법인 보기: <span class="badge badge-gray">${State.corpView}</span></p>
+    </div>
+
+    <div class="card mt-12">
+      <h3>빠른 시작</h3>
+      <div class="grid grid-2 mt-12">
+        <button class="btn btn-outline" onclick="Router.go('master-list')">📋 마스터 관리</button>
+        <button class="btn btn-outline" onclick="Router.go('csv-import')">📥 데이터 import</button>
+        <button class="btn btn-outline" onclick="Router.go('ledger')">📒 거래원장 (MVP-B)</button>
+        <button class="btn btn-outline" onclick="Router.go('invoice')">🧾 인보이스 (V1)</button>
+      </div>
+    </div>
+
+    <div class="card mt-12">
+      <h3>현재 단계: MVP-A</h3>
+      <p class="c-txt-l mt-8">${CONFIG.APP_NAME} v${CONFIG.APP_VERSION}</p>
+      <p class="fs-12 c-txt-ll mt-8">
+        ${setupCheck.allReady
+          ? '✓ 셋업 완료. 마스터 데이터 입력을 시작하세요.'
+          : '○ ENV_SETUP 진행 중. 권한·ID 받으시면 즉시 운영 시작.'}
+      </p>
+    </div>
+  `;
+};
+
+async function checkSetupStatus() {
+  const checks = [
+    { label: 'OAuth Client ID 등록', ok: CONFIG.CLIENT_ID && !CONFIG.CLIENT_ID.startsWith('__') },
+    { label: 'Sheets ID 등록', ok: CONFIG.SHEET_ID && !CONFIG.SHEET_ID.startsWith('__') },
+    { label: 'Drive Folder ID 등록', ok: CONFIG.DRIVE_FOLDER_ID && !CONFIG.DRIVE_FOLDER_ID.startsWith('__') },
+    { label: 'Sheets 22시트 생성 (Apps Script)', ok: false }, // 시도해야 알 수 있음
+  ];
+  // Sheets 시트 존재 확인
+  if (checks[1].ok && State.token) {
+    try {
+      await SheetsAPI.getAll('사용자', false);
+      checks[3].ok = true;
+    } catch {
+      checks[3].ok = false;
+    }
+  }
+  return {
+    checks,
+    allReady: checks.every(c => c.ok),
+  };
+}
+
+/* ─── 다른 화면 placeholder (MVP-A Day 2~5에서 구현) ─── */
+Screens['master-list'] = async () => {
+  renderHeader('마스터 관리');
+  $id('main-content').innerHTML = `
+    <div class="card">
+      <h3>마스터 시트 9개</h3>
+      <p class="c-txt-l mt-8">MVP-A Day 4~5에서 화면 구현 예정.</p>
+      <div class="grid grid-2 mt-12">
+        <button class="btn btn-outline" onclick="Router.go('master-corp')">법인</button>
+        <button class="btn btn-outline" onclick="Router.go('master-partner')">거래처</button>
+        <button class="btn btn-outline" onclick="Router.go('master-store')">점포</button>
+        <button class="btn btn-outline" onclick="Router.go('master-contract')">가맹점계약</button>
+        <button class="btn btn-outline" onclick="Router.go('master-account')">계정과목</button>
+        <button class="btn btn-outline" onclick="Router.go('master-bu')">BU채널</button>
+        <button class="btn btn-outline" onclick="Router.go('master-sku')">상품SKU</button>
+        <button class="btn btn-outline" onclick="Router.go('master-tax')">세율</button>
+        <button class="btn btn-outline" onclick="Router.go('master-fx')">환율</button>
+      </div>
+      <button class="btn btn-sm btn-gray mt-12" onclick="Router.go('home')">← 홈</button>
+    </div>`;
+};
+
+Screens['csv-import'] = async () => {
+  renderHeader('데이터 import');
+  $id('main-content').innerHTML = `
+    <div class="card">
+      <h3>CSV·엑셀 일괄 업로드</h3>
+      <p class="c-txt-l mt-8">사용자 보유 데이터(특히 물류사 엑셀)를 시스템 시트로 import.</p>
+      <p class="fs-12 c-txt-ll mt-8">상세 가이드: <code>docs/INPUT_DATA.md</code></p>
+      <p class="fs-12 c-warn mt-12">⚠️ MVP-A Day 5에서 화면 구현 예정. 현재는 Apps Script <code>scripts/import_user_data.gs</code> 사용.</p>
+      <button class="btn btn-sm btn-gray mt-12" onclick="Router.go('home')">← 홈</button>
+    </div>`;
+};
+
+/* ═══════════════════════════════════════════════
+   APP INITIALIZATION
+   ═══════════════════════════════════════════════ */
+async function initApp() {
+  console.log(`[App] ${CONFIG.APP_NAME} v${CONFIG.APP_VERSION} 시작`);
+
+  // CONFIG 검증
+  if (CONFIG.CLIENT_ID.startsWith('__')) {
+    console.warn('[Setup] OAuth Client ID 미등록. ENV_SETUP §③ 참조');
+  }
+
+  // OAuth 토큰 복원
+  const hasToken = Auth.init();
+
+  if (hasToken) {
+    // 토큰이 있으면 사용자 정보 로드 후 home
+    if (!State.user) {
+      await Auth.loadUserInfo();
+    } else {
+      await Auth.checkRole();
+    }
+    if (State.user) {
+      Router.go('home');
+    } else {
+      Router.go('login');
+    }
+  } else {
+    Router.go('login');
+  }
+
+  // bottom nav 클릭 핸들러
+  $$('#bottom-nav .item').forEach(el => {
+    el.onclick = () => {
+      const screen = el.dataset.screen;
+      if (screen) Router.go(screen);
+    };
+  });
+
+  // PWA 설치 프롬프트
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('[PWA] 설치 가능');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initApp);
+</script>
+</body>
+</html>

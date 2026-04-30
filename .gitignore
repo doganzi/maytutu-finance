@@ -1,0 +1,52 @@
+# ─── Public Repo 보안 (사내 정보 보호) ───────
+# 내부 운영 docs (본사 직원·매출·투자 정보 포함) — 사용자 로컬에만 유지
+docs/
+# Claude Code 프로젝트 메모리 (사내 상세 컨텍스트) — 사용자 로컬·.claude만
+CLAUDE.md
+# 다른 private repo (스마트팩토리) 코드 사본 — 노출 X
+reference/
+# 사용자 입력 워크북 (가맹점·점주·계약 등 사내 정보) — 사용자 로컬에만
+templates/
+
+# ─── 표준 ──────────────────────────────────
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Reference (스마트팩토리 사본 — 차용 베이스, repo에 포함)
+# reference/ 는 의도적으로 추적
+
+# Local secrets (절대 커밋 X)
+.env
+.env.local
+*.key
+*.pem
+secrets.json
+gcp-sa-key.json
+
+# Logs
+*.log
+logs/
+
+# Build outputs (현재 빌드 없지만 미래 대비)
+dist/
+build/
+node_modules/
+*.tmp
+
+# User data (민감)
+templates/*_filled.csv
+templates/*_actual.csv
+data/
+backups/
+
+# OS-specific
+nul
