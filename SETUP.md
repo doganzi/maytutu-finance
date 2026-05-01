@@ -15,7 +15,7 @@
 ```bash
 git clone https://github.com/doganzi/maytutu-finance.git
 cd maytutu-finance
-./scripts/setup-dev.sh
+bash scripts/setup-dev.sh
 # → http://localhost:8080
 ```
 
